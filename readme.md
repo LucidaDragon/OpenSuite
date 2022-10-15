@@ -3,9 +3,8 @@ An open source, decentralized, and modular replacement for cloud services, inclu
 
 ## Quick Start
 1. OpenSuite requires Python 3.10+ to run. You can download it [here](https://www.python.org/downloads/). Ensure that ```pip``` is also installed during this process.
-2. OpenSuite also uses the SQLite Python module to store persistent data by default. You can install it with the following command: ```pip install sqlite3```
-3. Start the server with the following command: ```python main.py```
-4. Open a web browser and connect to the server by navigating to [http://localhost:8080/](http://localhost:8080/).
+2. Start the server with the following command: ```python main.py```
+3. Open a web browser and connect to the server by navigating to [http://localhost:8080/](http://localhost:8080/).
 
 ## Configuration
 ### Server Port & Allowed Addresses
