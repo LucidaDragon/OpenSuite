@@ -1,0 +1,248 @@
+html, body
+{
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body
+{
+	display: grid;
+	grid-template-rows: max-content max-content auto max-content;
+	background-color: var(--background-color);
+}
+
+#drive-header
+{
+	grid-row: 1;
+	background-color: var(--panel-header-color);
+	display: grid;
+	padding: 1em;
+	margin-bottom: 1em;
+	grid-template-columns: max-content auto max-content;
+}
+
+#header-title
+{
+	margin: 0;
+	color: var(--text-color);
+	font-weight: normal;
+	font-size: 1.5em;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#header-icon
+{
+	height: 2em;
+	margin-right: 1em;
+	grid-column: 1;
+}
+
+#file-list
+{
+	display: grid;
+	margin-left: 1em;
+	margin-right: 1em;
+	grid-template-columns: repeat(auto-fill, var(--icon-button-size));
+}
+
+.file-entry
+{
+	border-width: 0;
+	border-radius: 1em;
+	border-color: transparent;
+	border-style: solid;
+	cursor: pointer;
+	background-color: var(--panel-color);
+	width: var(--icon-button-size);
+	min-height: var(--icon-button-size);
+}
+
+.file-entry > a
+{
+	color: var(--text-color);
+	text-decoration: none;
+}
+
+.file-entry > a:visited
+{
+	color: var(--text-color);
+	text-decoration: none;
+}
+
+.modal
+{
+	display: grid;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	grid-template-columns: auto max-content auto;
+	grid-template-rows: auto max-content auto;
+	background-color: #7F7F7F7F;
+}
+
+.modal-box
+{
+	display: grid;
+	padding: 1em;
+	grid-row: 2;
+	grid-column: 2;
+	grid-template-columns: auto max-content max-content;
+	grid-template-rows: max-content max-content auto;
+	border-radius: 1em;
+	background-color: var(--panel-color);
+}
+
+.modal-title
+{
+	margin-left: 0;
+	margin-right: 0;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+	padding: 0;
+	grid-row: 1;
+	grid-column-start: 1;
+	grid-column-end: 4;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 16pt;
+	color: var(--text-color);
+}
+
+.modal-input
+{
+	margin-bottom: 1em;
+	grid-row: 2;
+	grid-column-start: 1;
+	grid-column-end: 4;
+	border: none;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12pt;
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+
+.modal-input:focus
+{
+	outline: none;
+}
+
+.resolve-button, .reject-button
+{
+	color: var(--text-color);
+	border-width: 0;
+	border-radius: 0.25em;
+	border-style: solid;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 1em;
+	font-weight: bold;
+}
+
+.resolve-button
+{
+	margin-right: 1em;
+	grid-row: 3;
+	grid-column: 2;
+	background-color: var(--accept-color);
+}
+
+.reject-button
+{
+	grid-row: 3;
+	grid-column: 3;
+	background-color: var(--decline-color);
+}
+
+.context-menu
+{
+	position: absolute;
+	display: grid;
+	grid-template-rows: repeat(auto-fill, 2em);
+}
+
+.context-menu-close
+{
+	cursor: pointer;
+	border: none;
+	background-color: var(--panel-header-color);
+	text-align: left;
+}
+
+.context-menu-close > svg
+{
+	width: 2em;
+	height: 2em;
+}
+
+.context-menu-item
+{
+	cursor: pointer;
+	border: none;
+	color: var(--text-color);
+	background-color: var(--panel-header-color);
+	text-align: left;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 12pt;
+	padding: 0.5em;
+}
+
+.context-menu-item:hover
+{
+	background-color: var(--accent-color);
+}
+
+#progress-stack
+{
+	display: grid;
+	margin: 0;
+	padding: 1em;
+	background-color: var(--panel-color);
+	grid-row: 4;
+	grid-template-columns: max-content auto max-content;
+	align-items: center;
+}
+
+.progress-label
+{
+	color: var(--text-color);
+	grid-column: 1;
+	margin-right: 1em;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.progress-outer
+{
+	margin: 0;
+	padding: 0;
+	background-color: var(--background-color);
+	grid-column: 2;
+	height: 1em;
+}
+
+.progress-inner
+{
+	margin: 0;
+	padding: 0;
+	background-color: var(--accent-color);
+	height: 100%;
+	width: 0%;
+}
+
+.progress-cancel
+{
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-right: 0;
+	margin-left: 1em;
+	grid-column: 3;
+	cursor: pointer;
+	border: none;
+	background: none;
+	vertical-align: middle;
+}
+
+.progress-cancel > svg
+{
+	width: 2em;
+	height: 2em;
+}

@@ -1,0 +1,140 @@
+body
+{
+	display: grid;
+	grid-template-rows: max-content auto;
+	margin-left: 0;
+	margin-right: 0;
+	margin-top: 0;
+	margin-bottom: 1em;
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+
+#settings-header
+{
+	grid-row: 1;
+	background-color: var(--panel-header-color);
+	display: grid;
+	padding: 1em;
+	margin-bottom: 1em;
+	grid-template-columns: max-content auto max-content max-content;
+}
+
+#header-title
+{
+	margin: 0;
+	color: var(--text-color);
+	font-weight: normal;
+	font-size: 1.5em;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#header-icon
+{
+	height: 2em;
+	margin-right: 1em;
+	grid-column: 1;
+}
+
+#save-button, #restore-button
+{
+	border-width: 2px;
+	border-radius: 0.25em;
+	border-style: solid;
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 1em;
+	font-weight: bold;
+	border-color: transparent;
+}
+
+#restore-button
+{
+	margin-right: 1em;
+	color: var(--text-color);
+	background-color: var(--decline-color);
+	grid-column: 3;
+}
+
+#save-button
+{
+	color: var(--text-color);
+	background-color: var(--accept-color);
+	grid-column: 4;
+}
+
+#settings-list
+{
+	grid-row: 2;
+}
+
+.outer-container
+{
+	margin: 0;
+	padding: 0;
+	color: inherit;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container-toggle
+{
+	color: inherit;
+	background-color: var(--panel-header-color);
+	display: list-item;
+	width: 100%;
+	border: none;
+	padding: 0.5em;
+	text-align: left;
+	font-size: 1.5em;
+	font-weight: bold;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.container-toggle::before
+{
+	content: '- ';
+}
+
+.collapsed-outer > .container-toggle::before
+{
+	content: '+ ';
+}
+
+.inner-container
+{
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	color: inherit;
+	background-color: var(--panel-color);
+	display: grid;
+	grid-template-columns: max-content auto;
+	row-gap: 0.25em;
+}
+
+.collapsed-outer > .inner-container
+{
+	display: none;
+}
+
+.property-name
+{
+	grid-column: 1;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+
+.property-value
+{
+	color: var(--text-color);
+	background-color: var(--panel-color);
+	border-color: var(--panel-header-color);
+	border-width: 1px;
+	border-style: solid;
+	grid-column: 2;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.property-value:focus
+{
+	outline: none;
+	border-color: var(--accent-color);
+}
