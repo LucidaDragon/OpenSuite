@@ -19,17 +19,7 @@ MIME_TYPES = {
 	".svg": "image/svg+xml"
 }
 
-PYTHON_CACHE: dict[str, ModuleType] = {}
-
 AUTHORIZATION_COOKIE_REGEX = re.compile(r"Authorization=([\d\w\+\/=]+)")
-
-def load_module(path: str, name: str) -> ModuleType:
-	if path in PYTHON_CACHE: return PYTHON_CACHE[path]
-	module_spec = importlib.util.spec_from_file_location(name, path)
-	module = importlib.util.module_from_spec(module_spec)
-	module_spec.loader.exec_module(module)
-	PYTHON_CACHE[path] = module
-	return module
 
 def get_mime_type(extension: str) -> str:
 	return MIME_TYPES[extension] if extension in MIME_TYPES else "application/octet-stream"
@@ -58,17 +48,10 @@ class ServiceRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.authenticated = False
 		self.user: str | None = None
 
-	def load_module(self, path: pathlib.Path) -> ModuleType:
-		start = datetime.datetime.now()
-		result = load_module(str(path), path.parent.name)
-		end = datetime.datetime.now()
-		print("Loaded", path.parent.name, "module in", (end - start).total_seconds() * 1000, "ms")
-		return result
-
 	def execute_module(self, path: pathlib.Path) -> str:
 		start = datetime.datetime.now()
-		module = load_module(str(path), path.parent.name)
-		html = module.get_html(**self.get_params())
+		module = MODULE_INTERFACES[path.parent.name]
+		html = module.get_html(self)
 		end = datetime.datetime.now()
 		print("Executed", path.parent.name, "module in", (end - start).total_seconds() * 1000, "ms")
 		return html
@@ -101,7 +84,6 @@ class ServiceRequestHandler(http.server.BaseHTTPRequestHandler):
 
 	def get_path(self) -> pathlib.Path:
 		path = "./modules" + self.get_uri().path.replace("..", "")
-		if path.endswith("/"): path += "index.html"
 		return pathlib.Path(path).absolute()
 
 	def get_mime_type(self) -> str:
@@ -125,7 +107,6 @@ class ServiceRequestHandler(http.server.BaseHTTPRequestHandler):
 	def html_file_handler(self) -> None:
 		try:
 			path = self.get_path().with_suffix(".py")
-			self.load_module(path)
 			html = self.execute_module(path).encode("UTF-8")
 			self.send_response_only(200, "OK")
 			self.send_header("Content-Type", "text/html")
@@ -156,7 +137,7 @@ class ServiceRequestHandler(http.server.BaseHTTPRequestHandler):
 	def process_authentication(self) -> bool:
 		for handler in AUTHORIZATION_MODULES:
 			if not handler(self): return False
-		settings_module.set_default_settings(self, DEFAULT_SETTINGS)
+		if settings_module != None: settings_module.set_default_settings(self, DEFAULT_SETTINGS)
 		return True
 
 	def do_GET(self):
@@ -182,6 +163,26 @@ class ServiceRequestHandler(http.server.BaseHTTPRequestHandler):
 		self.send_response_only(204, "No Content")
 		self.send_header("Allow", "OPTIONS, GET, HEAD, POST")
 
+class ServerExtensionInterface:
+	def __init__(self, mime_handlers: dict[str, Callable[[ServiceRequestHandler], None]], mime_types: dict[str, str], api_handlers: dict[str, Callable[[ServiceRequestHandler], None]], authorization_modules: list[Callable[[ServiceRequestHandler], bool]], events: Events) -> None:
+		self.mime_handlers = mime_handlers
+		self.mime_types = mime_types
+		self.api_handlers = api_handlers
+		self.authorization_modules = authorization_modules
+		self.events = events
+
+class ModuleInterface:
+	def init(self, server: ServerExtensionInterface) -> None: ...
+	def is_dashboard_module(self) -> bool: return False
+	def get_icon_html(self, request: ServiceRequestHandler) -> str: ...
+	def get_html(self, request: ServiceRequestHandler) -> str: ...
+	def get_default_settings(self) -> dict[str, str]: return {}
+
+class SettingsModuleInterface(ModuleInterface):
+	def set_default_settings(self, request: ServiceRequestHandler, settings: dict[str, dict[str, str]]) -> None: ...
+
+MODULE_INTERFACES: dict[str, ModuleInterface] = {}
+
 MIME_HANDLERS: dict[str, Callable[[ServiceRequestHandler], None]] = {
 	"api": ServiceRequestHandler.api_handler,
 	"text/html": ServiceRequestHandler.html_file_handler,
@@ -199,27 +200,41 @@ DASHBOARD_MODULES: dict[str, Callable[[ServiceRequestHandler], str]] = {}
 EVENTS = Events()
 
 DEFAULT_SETTINGS: dict[str, dict[str, str]] = {}
-settings_module: ModuleType | None = None
+settings_module: SettingsModuleInterface | None = None
+
+PYTHON_CACHE: dict[str, ModuleType] = {}
+
+def load_module(path: str, name: str) -> ModuleType:
+	if path in PYTHON_CACHE: return PYTHON_CACHE[path]
+	module_spec = importlib.util.spec_from_file_location(name, path)
+	module = importlib.util.module_from_spec(module_spec)
+	module_spec.loader.exec_module(module)
+	PYTHON_CACHE[path] = module
+	return module
 
 def init_modules():
-	global settings_module
 	if len(PYTHON_CACHE) > 0: return
+	extensions = ServerExtensionInterface(MIME_HANDLERS, MIME_TYPES, API_HANDLERS, AUTHORIZATION_MODULES, EVENTS)
+	def add_directory(directory):
+		global settings_module
+		path = pathlib.Path("./modules/" + directory).joinpath("./index.py").absolute()
+		try:
+			module = load_module(str(path), path.parent.name)
+			for obj in vars(module).values():
+				if isinstance(obj, type) and issubclass(obj, ModuleInterface) and obj != ModuleInterface and obj != SettingsModuleInterface:
+					module_interface = obj()
+					module_interface.init(extensions)
+					if module_interface.is_dashboard_module(): DASHBOARD_MODULES[path.parent.name] = module_interface.get_icon_html
+					default_settings = module_interface.get_default_settings()
+					if len(default_settings) > 0: DEFAULT_SETTINGS[path.parent.name] = default_settings
+					if isinstance(module_interface, SettingsModuleInterface): settings_module = module_interface
+					MODULE_INTERFACES[path.parent.name] = module_interface
+					break
+		except Exception as ex:
+			print(f"Error loading {directory} module:", ex)
+	add_directory("../modules")
 	for _, directories, _ in os.walk("./modules"):
 		for directory in directories:
 			if directory.startswith(".") or directory.startswith("_"): continue
-			path = pathlib.Path("./modules/" + directory).joinpath("./index.py").absolute()
-			try:
-				module = load_module(str(path), path.parent.name)
-				if "init" in vars(module): module.init(**{
-					"mime_handlers": MIME_HANDLERS,
-					"mime_types": MIME_TYPES,
-					"api_handlers": API_HANDLERS,
-					"authorization_modules": AUTHORIZATION_MODULES,
-					"events": EVENTS
-				})
-				if "get_icon_html" in vars(module): DASHBOARD_MODULES[path.parent.name] = module.get_icon_html
-				if "get_default_settings" in vars(module): DEFAULT_SETTINGS[path.parent.name] = module.get_default_settings()
-				if path.parent.name == "settings": settings_module = module
-			except Exception as ex:
-				print(f"Error loading {directory} module:", ex)
+			add_directory(directory)
 		break
