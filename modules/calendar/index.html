@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>OSuite Calendar</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+		<link rel="stylesheet" type="text/css" href="/calendar/style.css">
+		<script type="application/javascript" src="/auth/session.js"></script>
+		<script type="application/javascript" src="/settings/remote_storage.js"></script>
+		<script type="application/javascript" src="/settings/theme.js"></script>
+		<script type="application/javascript" src="/calendar/index.js"></script>
+	</head>
+	<body>
+		<div id="calendar-header">
+			<a href="/dashboard/index.html">
+				<img id="header-icon" src="/favicon.svg">
+			</a>
+			<h1 id="header-title">Calendar</h1>
+			<div id="calendar-controls">
+				<select id="calendar-month" class="month-input">
+					<option>January</option>
+					<option>February</option>
+					<option>March</option>
+					<option>April</option>
+					<option>May</option>
+					<option>June</option>
+					<option>July</option>
+					<option>August</option>
+					<option>September</option>
+					<option>October</option>
+					<option>November</option>
+					<option>December</option>
+				</select>
+				<input id="calendar-year" class="year-input" type="number">
+			</div>
+		</div>
+		<div id="calendar-grid"></div>
+	</body>
+</html>
